@@ -58,11 +58,19 @@ class SecurityChecker
                 throw new \InvalidArgumentException(sprintf('Unsupported format "%s".', $format));
         }
 
+        if (function_exists('curl_file_create')) {
+            $cfile = curl_file_create($lock);
+            $data = array('lock' => $cfile);
+            curl_setopt($curl, CURLOPT_POST, 1);
+        }else{
+            $data = array('lock' => '@'.$lock);
+        }
+
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_HEADER, true);
         curl_setopt($curl, CURLOPT_URL, 'https://security.sensiolabs.org/check_lock');
         curl_setopt($curl, CURLOPT_HTTPHEADER, array('Accept: '.$accept));
-        curl_setopt($curl, CURLOPT_POSTFIELDS, array('lock' => '@'.$lock));
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $data);
         curl_setopt($curl, CURLOPT_CONNECTTIMEOUT, 5);
         curl_setopt($curl, CURLOPT_TIMEOUT, 10);
         curl_setopt($curl, CURLOPT_FOLLOWLOCATION, 1);
